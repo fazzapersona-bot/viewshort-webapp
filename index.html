@@ -1,140 +1,272 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>VIEWSHORT — Premium</title>
-<style>
-:root{--bg:#07101a;--card:#071829;--accent:#06b6d4;--muted:#9aa4b2;--text:#e6f7fb}
-*{box-sizing:border-box}
-html,body{height:100%;margin:0;background:linear-gradient(180deg,#04101a,#06121a);color:var(--text);font-family:Inter,Segoe UI,Roboto,Arial}
-.app{max-width:980px;margin:0 auto;padding:18px}
-.header{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.title{font-size:20px;font-weight:800}
-.search{display:flex;gap:8px;margin:14px 0}
-.search input{flex:1;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:rgba(255,255,255,0.02);color:var(--text)}
-.search button{padding:10px 14px;border-radius:10px;border:none;background:var(--accent);color:#042027;font-weight:700}
-.filters{display:flex;gap:8px;margin-bottom:14px}
-.filter-btn{padding:8px 12px;border-radius:10px;border:none;background:transparent;color:var(--muted);cursor:pointer}
-.filter-btn.active{background:var(--accent);color:#042027}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
-.card{background:var(--card);border-radius:12px;overflow:hidden;box-shadow:0 6px 18px rgba(2,6,10,.6);cursor:pointer;transition:transform .15s ease}
-.card:hover{transform:translateY(-6px)}
-.thumb{width:100%;aspect-ratio:9/16;object-fit:cover;display:block;background:#000}
-.card .meta{padding:8px}
-.card .meta .t{font-weight:700;font-size:13px;color:var(--text);line-height:1.1}
-.card .meta .c{font-size:12px;color:var(--muted);margin-top:6px}
-.controls{display:flex;justify-content:center;gap:12px;margin:18px 0}
-.pag-btn{padding:8px 12px;border-radius:8px;border:none;background:rgba(255,255,255,0.03);color:var(--text);cursor:pointer}
-.loader{display:flex;align-items:center;justify-content:center;padding:40px;color:var(--muted)}
-.footer{margin-top:24px;color:var(--muted);font-size:13px;text-align:center}
-@media (max-width:420px){.app{padding:12px}.title{font-size:18px}}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🎞️ VIEWSHORT Premium</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #0a0f1c;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    header {
+      margin-top: 15px;
+      text-align: center;
+    }
+
+    header h1 {
+      color: #fff;
+      font-size: 1.3rem;
+    }
+
+    header small {
+      color: #6c757d;
+      font-size: 0.8rem;
+    }
+
+    .search-bar {
+      display: flex;
+      align-items: center;
+      margin: 10px 0;
+      width: 90%;
+      max-width: 500px;
+    }
+
+    .search-bar input {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 6px 0 0 6px;
+      outline: none;
+      background-color: #1b2235;
+      color: #fff;
+    }
+
+    .search-bar button {
+      background-color: #1e90ff;
+      border: none;
+      color: white;
+      padding: 10px 14px;
+      border-radius: 0 6px 6px 0;
+      cursor: pointer;
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .tab {
+      background-color: #1b2235;
+      color: #fff;
+      padding: 6px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .tab.active {
+      background-color: #1e90ff;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 15px;
+      width: 90%;
+      max-width: 1000px;
+    }
+
+    .card {
+      background-color: #101624;
+      border-radius: 10px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    }
+
+    .card img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+    }
+
+    .card-title {
+      padding: 10px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #fff;
+      text-align: center;
+    }
+
+    .pagination {
+      margin: 20px 0;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .pagination button {
+      background-color: #1e90ff;
+      border: none;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    footer {
+      margin: 25px 0;
+      color: #6c757d;
+      font-size: 0.8rem;
+    }
+
+    .loading {
+      margin-top: 20px;
+      color: #ccc;
+    }
+  </style>
 </head>
 <body>
-<div class="app">
-  <div class="header">
-    <div class="title">🎬 VIEWSHORT Premium</div>
-    <div style="font-size:13px;color:var(--muted)">Powered by Supabase</div>
+
+  <header>
+    <h1>🎬 VIEWSHORT Premium</h1>
+    <small>Powered by Supabase</small>
+  </header>
+
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Cari Judul 🔍" />
+    <button id="searchBtn">Cari</button>
   </div>
 
-  <div class="search">
-    <input id="searchInput" placeholder="Cari Judul 🔍" />
-    <button id="searchBtn">🔎</button>
+  <div class="tabs">
+    <div class="tab active" data-cat="terbaru">Terbaru</div>
+    <div class="tab" data-cat="populer">Populer</div>
   </div>
 
-  <div class="filters">
-    <button class="filter-btn active" data-cat="terbaru">Terbaru</button>
-    <button class="filter-btn" data-cat="populer">Populer</button>
+  <div class="grid" id="videoGrid"></div>
+
+  <div class="pagination">
+    <button id="prevBtn">⬅ Sebelumnya</button>
+    <span id="pageInfo">Page 1</span>
+    <button id="nextBtn">Selanjutnya ➡</button>
   </div>
 
-  <div id="videoGrid" class="grid"></div>
+  <p class="loading" id="loading">Memuat...</p>
 
-  <div class="controls">
-    <button id="prevPage" class="pag-btn">⬅️ Sebelumnya</button>
-    <div id="pageInfo" style="align-self:center;color:var(--muted)">Page 1</div>
-    <button id="nextPage" class="pag-btn">Selanjutnya ➡️</button>
-  </div>
+  <footer>© VIEWSHORT — gunakan bertanggung jawab</footer>
 
-  <div id="loader" class="loader">Memuat...</div>
-  <div class="footer">© VIEWSHORT — gunakan bertanggung jawab</div>
-</div>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    const SUPABASE_URL = 'https://okqfnesvaetbljnzywvx.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rcWZuZXN2YWV0Ymxqbnp5d3Z4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0MjM0MTgsImV4cCI6MjA3Nzk5OTQxOH0.h3Z7bOJEBywZYHzwBSGScrvpXaDgNqHcXccLTkXjbhc';
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-<!-- Supabase client -->
-<script type="module">
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+    const grid = document.getElementById('videoGrid');
+    const loading = document.getElementById('loading');
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const tabs = document.querySelectorAll('.tab');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const pageInfo = document.getElementById('pageInfo');
 
-const SUPABASE_URL = "https://okqfnesvaetbljnzywvx.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rcWZuZXN2YWV0Ymxqbnp5d3Z4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0MjM0MTgsImV4cCI6MjA3Nzk5OTQxOH0.h3Z7bOJEBywZYHzwBSGScrvpXaDgNqHcXccLTkXjbhc";
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+    let currentPage = 1;
+    const limit = 12;
+    let currentCategory = 'terbaru';
+    let searchTerm = '';
 
-let currentCategory = 'terbaru';
-let searchQuery = '';
-let page = 1;
-const PAGE_SIZE = 12;
+    async function loadVideos() {
+      loading.textContent = "Memuat...";
+      grid.innerHTML = "";
+      const offset = (currentPage - 1) * limit;
 
-const grid = document.getElementById('videoGrid');
-const loader = document.getElementById('loader');
-const pageInfo = document.getElementById('pageInfo');
+      let query = supabase
+        .from('videos')
+        .select('*')
+        .eq('category', currentCategory)
+        .ilike('title', `%${searchTerm}%`)
+        .range(offset, offset + limit - 1)
+        .order('part', { ascending: false });
 
-document.getElementById('searchBtn').addEventListener('click', ()=>{
-  searchQuery = document.getElementById('searchInput').value.trim();
-  page = 1; fetchAndRender();
-});
+      const { data, error } = await query;
+      if (error) {
+        loading.textContent = "⚠️ Gagal memuat video.";
+        console.error(error);
+        return;
+      }
 
-document.querySelectorAll('.filter-btn').forEach(b=>{
-  b.addEventListener('click', (e)=>{
-    document.querySelectorAll('.filter-btn').forEach(x=>x.classList.remove('active'));
-    e.currentTarget.classList.add('active');
-    currentCategory = e.currentTarget.dataset.cat;
-    page = 1; fetchAndRender();
-  });
-});
+      loading.textContent = "";
+      if (!data || data.length === 0) {
+        grid.innerHTML = "<p>Tidak ada video ditemukan.</p>";
+        return;
+      }
 
-document.getElementById('prevPage').addEventListener('click', ()=>{ if(page>1){page--; fetchAndRender();}});
-document.getElementById('nextPage').addEventListener('click', ()=>{ page++; fetchAndRender();});
-
-async function fetchAndRender(){
-  loader.style.display='flex';
-  grid.innerHTML='';
-  pageInfo.textContent = `Page ${page}`;
-
-  try{
-    let query = supabase.from('videos').select('*').order('part', {ascending:true});
-    if(currentCategory) query = query.eq('category', currentCategory);
-    if(searchQuery) query = query.ilike('title', `%${searchQuery}%`);
-
-    const from = (page-1)*PAGE_SIZE;
-    const to = from + PAGE_SIZE - 1;
-    const { data, error } = await query.range(from, to);
-    if(error) throw error;
-
-    if(!data || data.length===0){
-      grid.innerHTML = '<div style="grid-column:1/-1;padding:40px;text-align:center;color:var(--muted)">Tidak ada video.</div>';
-    } else {
-      data.forEach(v => {
-        const div = document.createElement('div');
-        div.className='card';
-        div.innerHTML = `
-          <img class="thumb" src="${v.thumbnail}" alt="${v.title}">
-          <div class="meta">
-            <div class="t">${v.title}</div>
-            <div class="c">Part ${v.part || 1} • ${v.category || ''}</div>
-          </div>`;
-        div.onclick = ()=> window.location.href = \`detail.html?id=\${encodeURIComponent(v.id)}\`;
-        grid.appendChild(div);
+      data.forEach(item => {
+        const card = document.createElement('div');
+        card.className = "card";
+        card.innerHTML = `
+          <img src="${item.thumbnail || 'https://via.placeholder.com/400x200?text=No+Thumbnail'}" alt="${item.title}">
+          <div class="card-title">${item.title}</div>
+        `;
+        card.onclick = () => {
+          window.location.href = `detail.html?id=${item.id}&series_id=${item.series_id}`;
+        };
+        grid.appendChild(card);
       });
+
+      pageInfo.textContent = `Page ${currentPage}`;
     }
-  }catch(err){
-    console.error('Error fetching:', err);
-    grid.innerHTML = '<div style="grid-column:1/-1;padding:40px;text-align:center;color:#ffb3b3">Gagal mengambil data.</div>';
-  } finally{
-    loader.style.display='none';
-  }
-}
 
-fetchAndRender();
-</script>
+    // Tab click
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        currentCategory = tab.dataset.cat;
+        currentPage = 1;
+        loadVideos();
+      });
+    });
 
+    // Search click
+    searchBtn.addEventListener('click', () => {
+      searchTerm = searchInput.value.trim();
+      currentPage = 1;
+      loadVideos();
+    });
+
+    // Pagination
+    nextBtn.addEventListener('click', () => {
+      currentPage++;
+      loadVideos();
+    });
+    prevBtn.addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        loadVideos();
+      }
+    });
+
+    loadVideos();
+  </script>
 </body>
 </html>

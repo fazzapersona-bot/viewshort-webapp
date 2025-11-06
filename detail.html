@@ -1,126 +1,174 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>Player - VIEWSHORT</title>
-<style>
-:root{--bg:#07101a;--panel:#071829;--accent:#06b6d4;--muted:#9aa4b2;--text:#e6f7fb}
-*{box-sizing:border-box}
-html,body{height:100%;margin:0;background:linear-gradient(180deg,#04101a,#06121a);color:var(--text);font-family:Inter,Segoe UI,Roboto,Arial}
-.container{max-width:520px;margin:0 auto;padding:14px}
-.header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
-.back{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px;border-radius:10px;color:var(--text);cursor:pointer}
-.title{font-weight:700}
-.player-box{background:#000;border-radius:14px;overflow:hidden;box-shadow:0 10px 30px rgba(2,6,10,.6);position:relative}
-#player{width:100%;height:80vh;max-height:800px;object-fit:cover}
-.overlay{position:absolute;left:0;right:0;bottom:0;padding:12px;background:linear-gradient(180deg,rgba(0,0,0,0)0%,rgba(0,0,0,0.6)60%);display:flex;justify-content:space-between;align-items:center}
-.controls{display:flex;gap:10px;justify-content:center;margin-top:12px}
-.ctrl{padding:10px 14px;border-radius:10px;border:none;background:var(--panel);color:var(--text);cursor:pointer}
-.ctrl.primary{background:var(--accent);color:#042027}
-.parts-modal{position:fixed;left:0;top:0;width:100%;height:100%;display:none;align-items:center;justify-content:center;background:rgba(3,6,10,0.8);z-index:999;padding:16px}
-.parts-box{width:100%;max-width:520px;background:var(--panel);border-radius:12px;padding:14px;max-height:80vh;overflow:auto}
-.part-item{display:flex;align-items:center;gap:12px;padding:10px;border-radius:8px;margin-bottom:8px;background:linear-gradient(180deg,rgba(255,255,255,0.01),transparent);cursor:pointer}
-.part-item.active{outline:2px solid var(--accent)}
-.close-x{position:absolute;right:18px;top:18px;background:#fff;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;color:#000;cursor:pointer}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VIEWSHORT Premium - Player</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background-color: #0a0f1c;
+      color: #f5f5f5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+    }
+
+    h2 {
+      margin-top: 10px;
+      font-size: 1.2rem;
+      text-align: center;
+      color: #fff;
+    }
+
+    video {
+      width: 90%;
+      max-width: 400px;
+      border-radius: 12px;
+      margin-top: 10px;
+      background: #000;
+      box-shadow: 0 0 15px rgba(0,0,0,0.5);
+    }
+
+    .controls {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+    }
+
+    button {
+      background-color: #1e90ff;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    button:hover {
+      background-color: #3ba1ff;
+    }
+
+    footer {
+      margin-top: 25px;
+      font-size: 0.8rem;
+      opacity: 0.7;
+    }
+
+    .loader {
+      margin-top: 50px;
+      text-align: center;
+      font-size: 1rem;
+      opacity: 0.7;
+    }
+  </style>
 </head>
 <body>
-<div class="container">
-  <div class="header">
-    <button class="back" onclick="goHome()">🏠 Home</button>
-    <div>
-      <div id="vtitle" class="title">Loading...</div>
-      <div id="vpart" style="color:var(--muted);font-size:13px">Part -</div>
-    </div>
-  </div>
 
-  <div class="player-box">
-    <video id="player" controls playsinline webkit-playsinline></video>
-    <div class="overlay">
-      <div id="badge" style="background:rgba(0,0,0,0.6);padding:6px 10px;border-radius:8px;font-weight:700">Part</div>
-      <div id="duration" style="color:var(--muted)">00:00</div>
-    </div>
-  </div>
+  <h2 id="title">Memuat...</h2>
+  <video id="player" controls playsinline></video>
 
   <div class="controls">
-    <button class="ctrl" id="listBtn">📜 List Part</button>
-    <button class="ctrl primary" id="nextBtn">⏭️ Tonton Selanjutnya</button>
+    <button id="nextPart">⏭️ Tonton Selanjutnya</button>
+    <button id="listPart">📜 List Part</button>
+    <button id="home">🏠 Home</button>
   </div>
-</div>
 
-<div id="partsModal" class="parts-modal" onclick="closeParts()">
-  <div class="parts-box" onclick="event.stopPropagation()">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-      <strong>List part</strong>
-      <div class="close-x" onclick="closeParts()">×</div>
-    </div>
-    <div id="partsList"></div>
-  </div>
-</div>
+  <footer>© VIEWSHORT — gunakan dengan bijak</footer>
 
-<script type="module">
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-const SUPABASE_URL = "https://okqfnesvaetbljnzywvx.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rcWZuZXN2YWV0Ymxqbnp5d3Z4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0MjM0MTgsImV4cCI6MjA3Nzk5OTQxOH0.h3Z7bOJEBywZYHzwBSGScrvpXaDgNqHcXccLTkXjbhc";
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+  <script type="module">
+    // === KONFIGURASI SUPABASE ===
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-function getParam(name){ const u = new URL(location.href); return u.searchParams.get(name); }
+    const SUPABASE_URL = 'https://okqfnesvaetbljnzywvx.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rcWZuZXN2YWV0Ymxqbnp5d3Z4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0MjM0MTgsImV4cCI6MjA3Nzk5OTQxOH0.h3Z7bOJEBywZYHzwBSGScrvpXaDgNqHcXccLTkXjbhc';
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let parts = [];
-let currentIndex = 0;
+    // === AMBIL PARAMETER ID ===
+    const params = new URLSearchParams(window.location.search);
+    const videoId = params.get('id');
+    const seriesId = params.get('series_id');
 
-const player = document.getElementById('player');
-const vtitle = document.getElementById('vtitle');
-const vpart = document.getElementById('vpart');
-const badge = document.getElementById('badge');
-const duration = document.getElementById('duration');
-const listBtn = document.getElementById('listBtn');
-const nextBtn = document.getElementById('nextBtn');
+    const title = document.getElementById('title');
+    const player = document.getElementById('player');
+    const nextBtn = document.getElementById('nextPart');
+    const listBtn = document.getElementById('listPart');
+    const homeBtn = document.getElementById('home');
 
-listBtn.addEventListener('click', openParts);
-nextBtn.addEventListener('click', playNext);
+    async function loadVideo() {
+      try {
+        if (!videoId) {
+          title.textContent = "❌ Video tidak ditemukan!";
+          return;
+        }
 
-(async function init(){
-  const id = getParam('id');
-  if(!id){ vtitle.textContent = 'Invalid id'; return; }
+        const { data: videos, error } = await supabase
+          .from('videos')
+          .select('*')
+          .eq('id', videoId)
+          .limit(1);
 
-  try{
-    const { data:cur, error:err1 } = await supabase.from('videos').select('*').eq('id', id).single();
-    if(err1) throw err1;
-    const { data:all, error:err2 } = await supabase.from('videos').select('*').eq('series_id', cur.series_id).order('part', {ascending:true});
-    if(err2) throw err2;
-    parts = all;
-    currentIndex = parts.findIndex(p=> p.id === cur.id);
-    if(currentIndex<0) currentIndex = 0;
-    renderAndPlay();
-  }catch(err){
-    console.error(err);
-    vtitle.textContent = 'Gagal memuat data';
-  }
-})();
+        if (error || !videos || videos.length === 0) {
+          title.textContent = "⚠️ Video tidak tersedia.";
+          console.error(error);
+          return;
+        }
 
-function renderAndPlay(){
-  const item = parts[currentIndex];
-  if(!item) return;
-  vtitle.textContent = item.title || 'Untitled';
-  vpart.textContent = `Part ${item.part} / ${parts.length}`;
-  badge.textContent = `Part ${item.part}/${parts.length}`;
-  player.src = item.video_url;
-  player.addEventListener('loadedmetadata', ()=>{ duration.textContent = formatTime(Math.floor(player.duration||0)); }, {once:true});
-  player.play().catch(()=>{});
-  renderPartsList();
-}
+        const item = videos[0];
+        title.textContent = item.title || "Tanpa Judul";
 
-function playNext(){ if(currentIndex+1 < parts.length){ currentIndex++; renderAndPlay(); updatePartsActive(); } else { alert('Ini adalah bagian terakhir.'); }}
+        player.src = item.video_url;
+        player.type = "video/mp4";
+        player.crossOrigin = "anonymous";
+        player.load();
 
-function renderPartsList(){ const list = document.getElementById('partsList'); list.innerHTML=''; parts.forEach((p,idx)=>{ const el = document.createElement('div'); el.className = 'part-item'+(idx===currentIndex?' active':''); el.innerHTML = `<div style=\"flex:1\"><div style=\"font-weight:700\">${p.title}</div><div style=\"color:var(--muted);font-size:13px\">Part ${p.part}</div></div>`; el.onclick = ()=>{ currentIndex = idx; renderAndPlay(); closeParts(); }; list.appendChild(el); }); }
+        player.addEventListener('loadedmetadata', () => {
+          console.log("Durasi video:", player.duration);
+        });
 
-function openParts(){ document.getElementById('partsModal').style.display='flex'; updatePartsActive(); }
-function closeParts(){ document.getElementById('partsModal').style.display='none'; }
-function updatePartsActive(){ document.querySelectorAll('.part-item').forEach((n,i)=> n.classList.toggle('active', i===currentIndex)); }
-function goHome(){ window.location.href = (location.origin + location.pathname.replace(/detail\\.html.*$/,'index.html')) || '/'; }
-function formatTime(sec){ if(!sec||isNaN(sec)) return '00:00'; const m=Math.floor(sec/60); const s=Math.floor(sec%60); return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; }
-</script>
+        player.play().catch(err => {
+          console.warn('Autoplay diblokir:', err.message);
+        });
+
+        // === TOMBOL SELANJUTNYA ===
+        nextBtn.onclick = async () => {
+          const nextPart = item.part + 1;
+          const { data: next } = await supabase
+            .from('videos')
+            .select('*')
+            .eq('series_id', item.series_id)
+            .eq('part', nextPart)
+            .single();
+
+          if (next) {
+            window.location.href = `detail.html?id=${next.id}&series_id=${next.series_id}`;
+          } else {
+            alert("📺 Tidak ada part selanjutnya.");
+          }
+        };
+
+        // === TOMBOL LIST PART ===
+        listBtn.onclick = () => {
+          window.location.href = `index.html?series=${item.series_id}`;
+        };
+
+        // === TOMBOL HOME ===
+        homeBtn.onclick = () => {
+          window.location.href = `index.html`;
+        };
+
+      } catch (err) {
+        console.error("Gagal memuat video:", err);
+        title.textContent = "Terjadi kesalahan.";
+      }
+    }
+
+    loadVideo();
+  </script>
 </body>
 </html>
