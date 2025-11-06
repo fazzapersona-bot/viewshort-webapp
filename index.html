@@ -1,0 +1,71 @@
+<script src="https://unpkg.com/parse/dist/parse.min.js"></script>
+<script>
+const APP_ID = "hKBkpxqyaW95irOvCr8N9JXSkgNX9diKqu1wAyN6";
+const REST_KEY = "zjUUwYL6DSRNX99tt8KyqIUyEUQ161qFB1ADUwtq";
+Parse.initialize(APP_ID, REST_KEY);
+Parse.serverURL = 'https://parseapi.back4app.com/';
+
+let allVideos = [];
+let currentCategory = 'terbaru';
+
+// === Fetch semua video dari Back4App ===
+async function fetchVideos() {
+    const Videos = Parse.Object.extend("Videos");
+    const query = new Parse.Query(Videos);
+    try {
+        const results = await query.find();
+        // ✅ Map dengan objectId agar bisa dipakai di detail.html
+        allVideos = results.map(r => ({
+            id: r.id, // <-- Penting
+            title: r.get('title'),
+            video_url: r.get('video_url'),
+            thumbnail: r.get('thumbnail'),
+            category: (r.get('category') || '').toLowerCase()
+        }));
+        renderVideos();
+    } catch (error) {
+        console.error("Error fetching videos:", error);
+    }
+}
+
+// === Render video ke grid ===
+function renderVideos(searchText='') {
+    const container = document.getElementById('videoGrid');
+    container.innerHTML = '';
+    let filtered = allVideos.filter(v => v.category === currentCategory.toLowerCase());
+    if (searchText) {
+        filtered = filtered.filter(v => v.title.toLowerCase().includes(searchText.toLowerCase()));
+    }
+
+    filtered.forEach(v => {
+        const card = document.createElement('div');
+        card.className = 'video-card';
+        card.innerHTML = `
+            <img src="${v.thumbnail || 'https://via.placeholder.com/220x140?text=No+Image'}" alt="${v.title}">
+            <div class="title">${v.title}</div>
+        `;
+        // ✅ Klik gambar → buka detail.html + objectId
+        card.onclick = () => {
+            window.location.href = `detail.html?id=${encodeURIComponent(v.id)}`;
+        };
+        container.appendChild(card);
+    });
+}
+
+// === Filter kategori ===
+function filterCategory(category) {
+    currentCategory = category;
+    document.querySelectorAll('.filter-buttons button').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    renderVideos(document.getElementById('searchInput').value);
+}
+
+// === Search video ===
+function searchVideos() {
+    const text = document.getElementById('searchInput').value;
+    renderVideos(text);
+}
+
+// === Inisialisasi ===
+fetchVideos();
+</script>

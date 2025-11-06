@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Player - VIEWSHORT</title>
+<style>
+:root{
+  --bg:#0b0f14; --panel:#071018; --accent:#06b6d4; --muted:#9aa4b2; --text:#f1f7fb;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:linear-gradient(180deg,#07090b,#091018);color:var(--text);font-family:Inter,Segoe UI,Roboto,Arial}
+.app{max-width:900px;margin:0 auto;padding:14px}
+.header{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.back-btn{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 10px;border-radius:8px;color:var(--text);cursor:pointer}
+.info {flex:1}
+.title{font-weight:700;font-size:16px;margin:0 0 6px 0}
+.partline{font-size:13px;color:var(--muted);margin:0}
+
+/* player container portrait */
+.player-wrap{
+  width:100%;
+  display:flex;
+  justify-content:center;
+  margin-bottom:12px;
+}
+.player-box{
+  width:100%;
+  max-width:420px; /* portrait width */
+  border-radius:14px;
+  overflow:hidden;
+  background:#000;
+  position:relative;
+  box-shadow:0 10px 30px rgba(2,6,10,0.6);
+}
+
+/* video element fits portrait */
+#player{
+  width:100%;
+  height:80vh; /* take big vertical space on mobile */
+  max-height:800px;
+  object-fit:cover;
+  display:block;
+  background:#000;
+}
+
+/* overlay small info bottom */
+.overlay-bottom{
+  position:absolute;left:0;right:0;bottom:0;padding:10px;background:linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.6) 60%);
+  display:flex;justify-content:space-between;align-items:center;gap:10px;
+}
+.part-badge{background:rgba(0,0,0,0.6);padding:6px 10px;border-radius:8px;color:#fff;font-weight:700;font-size:13px}
+.duration{color:#cfeaf0;font-size:12px}
+
+/* control row */
+.controls{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:12px}
+.ctrl-btn{
+  background:var(--panel);border:1px solid rgba(255,255,255,0.04);padding:10px 12px;border-radius:10px;color:var(--text);
+  cursor:pointer;font-weight:700;min-width:160px;text-align:center;
+}
+.ctrl-btn.primary{background:var(--accent);color:#042027;border:none}
+.small{min-width:44px;padding:8px 10px;border-radius:8px;font-size:13px}
+
+/* list part modal */
+.parts-modal{position:fixed;left:0;top:0;width:100%;height:100%;display:none;align-items:center;justify-content:center;background:rgba(3,6,10,0.8);z-index:9999;padding:16px}
+.parts-box{width:100%;max-width:520px;background:var(--panel);border-radius:12px;padding:14px;max-height:80vh;overflow:auto}
+.part-item{display:flex;align-items:center;gap:12px;padding:10px;border-radius:8px;margin-bottom:8px;background:linear-gradient(180deg,rgba(255,255,255,0.01),transparent);cursor:pointer}
+.part-item.active{outline:2px solid var(--accent)}
+.part-item .pmeta{font-size:13px}
+.close-x{position:absolute;right:18px;top:18px;background:#fff;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;color:#000;cursor:pointer}
+
+/* small screens adjust */
+@media (max-width:420px){
+  #player{height:88vh}
+  .player-box{max-width:360px}
+  .ctrl-btn{min-width:140px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <button class="back-btn" onclick="goHome()">🏠 Home</button>
+    <div class="info">
+      <div id="title" class="title">Loading...</div>
+      <div id="partline" class="partline">Part -</div>
+    </div>
+  </div>
+
+  <div class="player-wrap">
+    <div class="player-box">
+      <video id="player" controls playsinline webkit-playsinline></video>
+
+      <div class="overlay-bottom">
+        <div class="part-badge" id="badge">Part 1/1</div>
+        <div class="duration" id="dur">00:00</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="ctrl-btn" id="listBtn">📋 List part</button>
+    <button class="ctrl-btn primary" id="nextBtn">⏭️ Tonton selanjutnya</button>
+  </div>
+</div>
+
+<!-- list parts modal -->
+<div id="partsModal" class="parts-modal" onclick="closeParts()">
+  <div class="parts-box" onclick="event.stopPropagation()">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <strong>List part</strong>
+      <div class="close-x" onclick="closeParts()">×</div>
+    </div>
+    <div id="partsList"></div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/parse/dist/parse.min.js"></script>
+<script>
+/* CONFIG: gunakan credential Back4App kamu */
+const APP_ID = "hKBkpxqyaW95irOvCr8N9JXSkgNX9diKqu1wAyN6";
+const REST_KEY = "zjUUwYL6DSRNX99tt8KyqIUyEUQ161qFB1ADUwtq";
+Parse.initialize(APP_ID, REST_KEY);
+Parse.serverURL = 'https://parseapi.back4app.com/';
+
+/* UTILS: ambil query param id */
+function getParam(name){
+  const u = new URL(location.href);
+  return u.searchParams.get(name);
+}
+
+/* State */
+let current = null; // object for current part
+let parts = []; // array of parts for this series
+let currentIndex = 0;
+
+const player = document.getElementById('player');
+const titleEl = document.getElementById('title');
+const partline = document.getElementById('partline');
+const badge = document.getElementById('badge');
+const dur = document.getElementById('dur');
+const listBtn = document.getElementById('listBtn');
+const nextBtn = document.getElementById('nextBtn');
+
+listBtn.addEventListener('click', ()=> openParts());
+nextBtn.addEventListener('click', ()=> playNext());
+
+/* main */
+(async function init(){
+  const id = getParam('id');
+  if(!id){
+    titleEl.textContent = 'Invalid video id';
+    return;
+  }
+
+  try{
+    // fetch current object
+    const Videos = Parse.Object.extend("Videos");
+    const q = new Parse.Query(Videos);
+    const obj = await q.get(id);
+
+    current = {
+      id: obj.id,
+      title: obj.get('title') || 'Untitled',
+      video_url: obj.get('video_url') || '',
+      thumbnail: obj.get('thumbnail') || '',
+      series_id: obj.get('series_id') || obj.id, // fallback to itself
+      part: Number(obj.get('part') || 1)
+    };
+
+    // fetch all parts with same series_id
+    const q2 = new Parse.Query(Videos);
+    q2.equalTo('series_id', current.series_id);
+    q2.ascending('part'); // order by part number
+    const rs = await q2.find();
+
+    parts = rs.map(r => ({
+      id: r.id,
+      title: r.get('title') || 'Untitled',
+      video_url: r.get('video_url') || '',
+      thumbnail: r.get('thumbnail') || '',
+      part: Number(r.get('part') || 1)
+    }));
+
+    // sort to be safe
+    parts.sort((a,b)=> a.part - b.part);
+
+    // find index
+    currentIndex = parts.findIndex(p=> p.id === current.id);
+    if(currentIndex < 0) currentIndex = 0;
+
+    // render UI & play
+    renderPartsList();
+    loadCurrent();
+
+  } catch(err){
+    console.error(err);
+    titleEl.textContent = 'Gagal memuat data';
+  }
+})();
+
+/* load current into player */
+function loadCurrent(){
+  const item = parts[currentIndex];
+  if(!item) return;
+  titleEl.textContent = item.title;
+  partline.textContent = `Part ${item.part} / ${parts.length}`;
+  badge.textContent = `Part ${item.part}/${parts.length}`;
+  player.src = item.video_url;
+  // show duration after metadata loads
+  player.addEventListener('loadedmetadata', () => {
+    const s = Math.floor(player.duration || 0);
+    dur.textContent = formatTime(s);
+  }, {once:true});
+
+  // autoplay attempt
+  player.play().catch(()=>{/* autoplay blocked; user will press play */});
+}
+
+/* play next */
+function playNext(){
+  if(currentIndex + 1 < parts.length){
+    currentIndex++;
+    loadCurrent();
+    // update parts modal highlight if open
+    updatePartsActive();
+  } else {
+    // last part
+    alert('Ini adalah bagian terakhir.');
+  }
+}
+
+/* parts modal UI */
+function renderPartsList(){
+  const list = document.getElementById('partsList');
+  list.innerHTML = '';
+  parts.forEach((p, idx) => {
+    const el = document.createElement('div');
+    el.className = 'part-item' + (idx === currentIndex ? ' active' : '');
+    el.innerHTML = `
+      <div style="flex:1">
+        <div style="font-weight:700">${escapeHTML(p.title)}</div>
+        <div style="color:var(--muted);font-size:13px">Part ${p.part}</div>
+      </div>
+    `;
+    el.onclick = ()=> {
+      currentIndex = idx;
+      loadCurrent();
+      closeParts();
+    };
+    list.appendChild(el);
+  });
+}
+
+function updatePartsActive(){
+  const nodes = document.querySelectorAll('.part-item');
+  nodes.forEach((n,i)=> {
+    n.classList.toggle('active', i === currentIndex);
+  });
+}
+
+function openParts(){ document.getElementById('partsModal').style.display = 'flex'; updatePartsActive(); }
+function closeParts(){ document.getElementById('partsModal').style.display = 'none'; }
+
+/* helpers */
+function goHome(){ // back to index page
+  // if you have index.html at same folder
+  window.location.href = (location.origin + location.pathname.replace(/detail\.html.*$/,'index.html')) || '/';
+}
+function formatTime(sec){
+  if(!sec || isNaN(sec)) return '00:00';
+  const m = Math.floor(sec / 60); const s = Math.floor(sec % 60);
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+function escapeHTML(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+</script>
+</body>
+</html>
