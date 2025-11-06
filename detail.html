@@ -19,25 +19,32 @@
     }
 
     h2 {
-      margin-top: 10px;
+      margin-top: 12px;
       font-size: 1.2rem;
       text-align: center;
       color: #fff;
     }
 
     video {
-      width: 90%;
-      max-width: 400px;
-      border-radius: 12px;
-      margin-top: 10px;
+      width: auto;
+      height: 80vh;
+      aspect-ratio: 9 / 16;
+      max-height: 90vh;
+      max-width: 100%;
+      border-radius: 14px;
       background: #000;
-      box-shadow: 0 0 15px rgba(0,0,0,0.5);
+      object-fit: contain;
+      box-shadow: 0 0 18px rgba(0, 0, 0, 0.6);
+      display: block;
+      margin: 15px auto;
     }
 
     .controls {
       margin-top: 10px;
       display: flex;
       gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
     }
 
     button {
@@ -45,19 +52,22 @@
       color: white;
       border: none;
       padding: 8px 14px;
-      border-radius: 6px;
+      border-radius: 8px;
       cursor: pointer;
       font-weight: 600;
+      transition: 0.3s;
     }
 
     button:hover {
       background-color: #3ba1ff;
+      transform: scale(1.05);
     }
 
     footer {
-      margin-top: 25px;
+      margin: 25px 0;
       font-size: 0.8rem;
       opacity: 0.7;
+      text-align: center;
     }
 
     .loader {
@@ -71,7 +81,7 @@
 <body>
 
   <h2 id="title">Memuat...</h2>
-  <video id="player" controls playsinline></video>
+  <video id="player" controls playsinline preload="metadata"></video>
 
   <div class="controls">
     <button id="nextPart">⏭️ Tonton Selanjutnya</button>
@@ -82,14 +92,12 @@
   <footer>© VIEWSHORT — gunakan dengan bijak</footer>
 
   <script type="module">
-    // === KONFIGURASI SUPABASE ===
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
     const SUPABASE_URL = 'https://okqfnesvaetbljnzywvx.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9rcWZuZXN2YWV0Ymxqbnp5d3Z4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0MjM0MTgsImV4cCI6MjA3Nzk5OTQxOH0.h3Z7bOJEBywZYHzwBSGScrvpXaDgNqHcXccLTkXjbhc';
     const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // === AMBIL PARAMETER ID ===
     const params = new URLSearchParams(window.location.search);
     const videoId = params.get('id');
     const seriesId = params.get('series_id');
@@ -127,6 +135,9 @@
         player.crossOrigin = "anonymous";
         player.load();
 
+        // agar tetap portrait di semua device
+        player.style.aspectRatio = "9 / 16";
+
         player.addEventListener('loadedmetadata', () => {
           console.log("Durasi video:", player.duration);
         });
@@ -135,7 +146,6 @@
           console.warn('Autoplay diblokir:', err.message);
         });
 
-        // === TOMBOL SELANJUTNYA ===
         nextBtn.onclick = async () => {
           const nextPart = item.part + 1;
           const { data: next } = await supabase
@@ -152,12 +162,10 @@
           }
         };
 
-        // === TOMBOL LIST PART ===
         listBtn.onclick = () => {
           window.location.href = `index.html?series=${item.series_id}`;
         };
 
-        // === TOMBOL HOME ===
         homeBtn.onclick = () => {
           window.location.href = `index.html`;
         };
